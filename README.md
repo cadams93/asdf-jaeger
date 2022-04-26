@@ -41,7 +41,11 @@ asdf install jaeger latest
 asdf global jaeger latest
 
 # Now jaeger commands are available
-jaeger --help
+- jaeger-agent --help
+- jaeger-all-in-one --help
+- jaeger-collector --help
+- jaeger-ingester --help
+- jaeger-query --help
 ```
 
 Check [asdf](https://github.com/asdf-vm/asdf) readme for more instructions on how to

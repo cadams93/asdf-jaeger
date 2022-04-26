@@ -32,8 +32,12 @@ list_all_versions() {
   list_github_tags
 }
 
-get_tool_cmd() {
+get_tool_cmds() {
+  echo "jaeger-agent"
   echo "jaeger-all-in-one"
+  echo "jaeger-collector"
+  echo "jaeger-ingester"
+  echo "jaeger-query"
 }
 
 download_release() {
@@ -65,14 +69,16 @@ install_version() {
   fi
 
   (
-    local tool_cmd="$(get_tool_cmd)"
-
     mkdir -p "$install_path/bin"
     cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
-    mv "$install_path/$tool_cmd" "$install_path/bin"
-    chmod +x "$install_path/bin/$tool_cmd"
 
-    test -x "$install_path/bin/$tool_cmd" || fail "Expected $install_path/bin/$tool_cmd to be executable."
+    for tool_cmd in $(get_tool_cmds)
+    do
+      mv "$install_path/$tool_cmd" "$install_path/bin"
+      chmod +x "$install_path/bin/$tool_cmd"
+
+      test -x "$install_path/bin/$tool_cmd" || fail "Expected $install_path/bin/$tool_cmd to be executable."
+    done
 
     echo "$TOOL_NAME $version installation was successful!"
   ) || (
