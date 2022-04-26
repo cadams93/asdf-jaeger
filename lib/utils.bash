@@ -72,8 +72,7 @@ install_version() {
     mkdir -p "$install_path/bin"
     cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
 
-    for tool_cmd in $(get_tool_cmds)
-    do
+    for tool_cmd in $(get_tool_cmds); do
       mv "$install_path/$tool_cmd" "$install_path/bin"
       chmod +x "$install_path/bin/$tool_cmd"
 
