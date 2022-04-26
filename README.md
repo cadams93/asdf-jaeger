@@ -25,8 +25,6 @@
 Plugin:
 
 ```shell
-asdf plugin add jaeger
-# or
 asdf plugin add jaeger https://github.com/cadams93/asdf-jaeger.git
 ```
 

@@ -2,10 +2,8 @@
 
 set -euo pipefail
 
-# TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for jaeger.
-GH_REPO="https://github.com/cadams93/asdf-jaeger"
+GH_REPO="https://github.com/jaegertracing/jaeger"
 TOOL_NAME="jaeger"
-TOOL_TEST="jaeger --help"
 
 fail() {
   echo -e "asdf-$TOOL_NAME: $*"
@@ -27,22 +25,31 @@ sort_versions() {
 list_github_tags() {
   git ls-remote --tags --refs "$GH_REPO" |
     grep -o 'refs/tags/.*' | cut -d/ -f3- |
-    sed 's/^v//' # NOTE: You might want to adapt this sed to remove non-version strings from tags
+    sed 's/^v//'
 }
 
 list_all_versions() {
-  # TODO: Adapt this. By default we simply list the tag names from GitHub releases.
-  # Change this function if jaeger has other means of determining installable versions.
   list_github_tags
 }
 
+get_tool_cmd() {
+  echo "jaeger-all-in-one"
+}
+
 download_release() {
-  local version filename url
+  local version filename url platform arch
   version="$1"
   filename="$2"
+  platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  arch="$(uname -m)"
 
-  # TODO: Adapt the release URL convention for jaeger
-  url="$GH_REPO/archive/v${version}.tar.gz"
+  case "$arch" in
+  x86_64)
+    arch=amd64
+    ;;
+  esac
+
+  url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}-${version}-${platform}-${arch}.tar.gz"
 
   echo "* Downloading $TOOL_NAME release $version..."
   curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
@@ -58,17 +65,18 @@ install_version() {
   fi
 
   (
-    mkdir -p "$install_path"
-    cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
+    local tool_cmd="$(get_tool_cmd)"
 
-    # TODO: Asert jaeger executable exists.
-    local tool_cmd
-    tool_cmd="$(echo "$TOOL_TEST" | cut -d' ' -f1)"
+    mkdir -p "$install_path/bin"
+    cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
+    mv "$install_path/$tool_cmd" "$install_path/bin"
+    chmod +x "$install_path/bin/$tool_cmd"
+
     test -x "$install_path/bin/$tool_cmd" || fail "Expected $install_path/bin/$tool_cmd to be executable."
 
     echo "$TOOL_NAME $version installation was successful!"
   ) || (
     rm -rf "$install_path"
-    fail "An error ocurred while installing $TOOL_NAME $version."
+    fail "An error occurred while installing $TOOL_NAME $version."
   )
 }
